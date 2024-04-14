@@ -49,7 +49,6 @@ app.listen(puerto, () => {
 
 
 // importar dependencias 
-require('dotenv').config()
 
 const {connection} = require("./database/connection");
 const express = require("express");
@@ -72,10 +71,11 @@ const port = process.env.PORT || 4000;
 const app = express();
 const puerto = 4000;
 
-const PORT = process.env.PORT
-app.listen(PORT, () => {
-    console.log(`Example app listening on port ${PORT}`)
-  })
+app.set("port", process.env.PORT || 4000);
+
+app.listen(app.get("port"), () => {
+    console.log("Escuchando en el port:" + app.get("port"));
+  });
 
 // configurar cors
 app.use(cors());
