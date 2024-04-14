@@ -49,6 +49,7 @@ app.listen(puerto, () => {
 
 
 // importar dependencias 
+require('dotenv').config()
 const {connection} = require("./database/connection");
 const express = require("express");
 const cors = require("cors");
@@ -59,6 +60,9 @@ console.log("API NODE para MI RED SOCIAL ARRANCADA !!");
 
 // conexion a la base de datos 
 connection();
+
+const PORT = process.env.PORT
+console.log("Aplicacion corriendo en puerto" + PORT)
 
 // crear servidor node 
 const app = express();
