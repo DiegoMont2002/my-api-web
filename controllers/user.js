@@ -154,4 +154,5 @@ module.exports = {
     pruebaUser,
     register,
     login
+    
 }
