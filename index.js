@@ -50,6 +50,7 @@ app.listen(puerto, () => {
 
 // importar dependencias 
 require('dotenv').config()
+
 const {connection} = require("./database/connection");
 const express = require("express");
 const cors = require("cors");
@@ -58,15 +59,23 @@ const cors = require("cors");
 // mensaje de bievenida
 console.log("API NODE para MI RED SOCIAL ARRANCADA !!");
 
+
+
+
 // conexion a la base de datos 
 connection();
 
-const PORT = process.env.PORT
-console.log("Aplicacion corriendo en puerto" + PORT)
 
-// crear servidor node 
+
+// crear servidor node
+const port = process.env.PORT || 4000; 
 const app = express();
 const puerto = 4000;
+
+const PORT = process.env.PORT
+app.listen(PORT, () => {
+    console.log(`Example app listening on port ${PORT}`)
+  })
 
 // configurar cors
 app.use(cors());
@@ -99,8 +108,8 @@ app.get("/ruta-prueba", (req, res) => {
 })
 
 // poner servidor a escuchar peticiones http
-app.listen(puerto, () => {
-    console.log("El servidor de node corriendo en el puerto: ", puerto);
+app.listen(port, () => {
+    console.log("El servidor de node corriendo en el puerto:  ${port} ");
 });
 
 
