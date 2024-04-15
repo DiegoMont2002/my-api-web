@@ -73,9 +73,8 @@ const puerto = 4000;
 
 app.set("port", process.env.PORT || 4000);
 
-app.listen(app.get("port"), () => {
-    console.log("Escuchando en el port:" + app.get("port"));
-  });
+
+  
 
 // configurar cors
 app.use(cors());
@@ -108,8 +107,8 @@ app.get("/ruta-prueba", (req, res) => {
 })
 
 // poner servidor a escuchar peticiones http
-app.listen(port, () => {
-    console.log("El servidor de node corriendo en el puerto:  ${port} ");
+app.listen(app.get("port"), () => {
+    console.log("Escuchando en el port:" + app.get("port"));
 });
 
 
