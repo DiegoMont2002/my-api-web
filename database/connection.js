@@ -5,7 +5,7 @@ const connection = async() => {
 
 
     try{
-        await mongoose.connect("mongodb://localhost:27017/mi_redsocial");
+        await mongoose.connect(process.env.MONGODB_URI);
 
         console.log("Conectado correctamente a la bd: mi_redsocial");
 
