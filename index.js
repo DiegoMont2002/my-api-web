@@ -49,7 +49,7 @@ app.listen(puerto, () => {
 
 
 // importar dependencias 
-
+require("dotenv").config();
 const {connection} = require("./database/connection");
 const express = require("express");
 const cors = require("cors");
