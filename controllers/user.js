@@ -79,6 +79,9 @@ module.exports = {
 const bcrypt = require("bcrypt");
 const User = require("../models/user")
 
+//Importar servicios
+const jwt = require("../services/jwt");
+
 //Acciones de prueba
 const pruebaUser = (req, res) => {
     return res.status(200).send({
@@ -86,9 +89,9 @@ const pruebaUser = (req, res) => {
     });
 }
 
+
+
 // Registro de Usuarios
-
-
 // Control de usuarios duplicados
 const register = async (req, res) => {
     // Recoger datos de la peticion
@@ -171,7 +174,7 @@ const login = async (req, res) => {
         }
 
         // DevolverToken
-        const token = false;
+        const token = jwt.createToken(user);
 
         // Eliminar password del objeto
         user.password = undefined;
@@ -179,7 +182,7 @@ const login = async (req, res) => {
         // Devolver datos del usuario
         return res.status(200).send({
             status: "success",
-            message: "Te has identificado correctamente",
+            message: "Te has identificado correctamentea",
             user: {
                 id: user._id,
                 name: user.name,
