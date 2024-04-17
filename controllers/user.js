@@ -80,49 +80,49 @@ const bcrypt = require("bcrypt");
 const User = require("../models/user")
 
 //Acciones de prueba
-const pruebaUser = (req, res) =>{
+const pruebaUser = (req, res) => {
     return res.status(200).send({
         message: "MEnsaje enviado desde: comtrollers/user.js"
     });
 }
 
 // Registro de Usuarios
-    
 
-    // Control de usuarios duplicados
-    const register = async (req, res) => {
-        // Recoger datos de la peticion
-        const params = req.body;
 
-        // Comprobacion de que lleguen bien (+ validacion)
-        if(!params.name || !params.email || !params.password || !params.nick){
-            return res.status(400).json({
-                status: "error",
-                message: "Faltan datos por enviar"
-            });   
-        }
-     
-     try {
-        const users = await User.find({ $or: [{email: params.email.toLowerCase()}, {nick: params.nick.toLowerCase()}]});
+// Control de usuarios duplicados
+const register = async (req, res) => {
+    // Recoger datos de la peticion
+    const params = req.body;
 
-        if(users && users.length >= 1){
+    // Comprobacion de que lleguen bien (+ validacion)
+    if (!params.name || !params.email || !params.password || !params.nick) {
+        return res.status(400).json({
+            status: "error",
+            message: "Faltan datos por enviar"
+        });
+    }
+
+    try {
+        const users = await User.find({ $or: [{ email: params.email.toLowerCase() }, { nick: params.nick.toLowerCase() }] });
+
+        if (users && users.length >= 1) {
             return res.status(200).send({
                 status: "success",
                 message: "El usuario ya existe"
             });
         }
 
-            // Cifrar la Contraseña
+        // Cifrar la Contraseña
         const pwd = await bcrypt.hash(params.password, 10);
-        params.password = pwd; 
+        params.password = pwd;
 
         // Crear objeto de usuario
         const user_to_save = new User(params);
-    
+
         // Guardar Usuario en la bbdd
         const userStored = await user_to_save.save();
-        
-            //Devolver Resultado
+
+        //Devolver Resultado
         return res.status(200).json({
             status: "success",
             message: "Usuario registardo correctamente",
@@ -134,19 +134,63 @@ const pruebaUser = (req, res) =>{
             status: "error",
             message: "Error al registrar el usuario",
             error: error.message
-        
-        
+
+
         });
     };
 
 }
 
-const login =(req, res) => {
-    return res.status(200).send({
-        statues: "success",
-        message: "Accion de login"
-    });
-}
+const login = async (req, res) => {
+    try {
+        // Recoger parametros
+        let params = req.body;
+
+        if (!params.email || !params.password) {
+            return res.status(400).send({
+                status: "error",
+                message: "Faltan datos por enviar"
+            });
+        }
+
+        // Buscar en la bbdd si existe
+        const user = await User.findOne({ email: params.email });
+
+        if (!user) {
+            return res.status(404).send({ status: "error", message: "No existe el usuario" });
+        }
+
+        // Comprobar su contraseña
+        const pwd = bcrypt.compareSync(params.password, user.password);
+
+        if (!pwd) {
+            return res.status(400).send({
+                status: "error",
+                message: "No te has identificado correctamente"
+            });
+        }
+
+        // DevolverToken
+        const token = false;
+
+        // Eliminar password del objeto
+        user.password = undefined;
+
+        // Devolver datos del usuario
+        return res.status(200).send({
+            status: "success",
+            message: "Te has identificado correctamente",
+            user: {
+                id: user._id,
+                name: user.name,
+                nick: user.nick
+            },
+            token
+        });
+    } catch (error) {
+        return res.status(500).send({ status: "error", message: "Error en el servidor" });
+    }
+};
 
 
 //Exportar acciones
@@ -154,5 +198,5 @@ module.exports = {
     pruebaUser,
     register,
     login
-    
-}
+
+};

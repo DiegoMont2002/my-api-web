@@ -81,7 +81,7 @@ app.use(cors());
 
 // convertir los datos del body a objetos js
 app.use(express.json());
-app.use(express.urlencoded({extends: true}));
+app.use(express.urlencoded({ extended: true}));
 
 // cargar configuracion rutas
 const UserRoutes = require("./routes/user");
