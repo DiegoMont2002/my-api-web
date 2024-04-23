@@ -120,11 +120,46 @@ const login = async (req, res) => {
     }
 };
 
+const profile = (req, res) => {
+    //Recibir parametrso del id de usuario por una url
+    const id = req.params.id;
+
+    //Consulta para sacra los datos del usuario
+    User.findById(id)
+    .select({password: 0, rol: 0})
+    .exec()
+     .then(userProfile => {
+        if(!userProfile){
+            return res.status(404).send({
+                status: "error",
+                message: "El usuario no existe"
+            });
+        }
+
+        //Devolver el resultado 
+        return res.status(200).send({
+            status: "success",
+            user: userProfile
+        });
+
+    })
+    .catch(error => {
+        return res.status(500).send({
+            status: "error",
+            message: "Hubo un error al procesar la solicitud"
+        });
+    });
+
+    
+
+}
+
 
 //Exportar acciones
 module.exports = {
     pruebaUser,
     register,
-    login
+    login,
+    profile
 
 };
