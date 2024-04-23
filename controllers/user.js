@@ -1,6 +1,7 @@
 
 // Importar dependencias y modulos 
 const bcrypt = require("bcrypt");
+const mongoosePagination = require("mongoose-pagination");
 const User = require("../models/user")
 
 //Importar servicios
@@ -148,11 +149,96 @@ const profile = (req, res) => {
             status: "error",
             message: "Hubo un error al procesar la solicitud"
         });
-    });
-
-    
+    }); 
 
 }
+
+/*const list = (req, res) => {
+
+    //Controlar en pagina estamos
+    let page = 1;
+    if(req.params.page){
+        page = req.params.page;
+    }
+    page = parseInt(page);
+
+    //Consulta con mongoose paginate
+    let itemsPerPage = 5;
+
+    User.find()
+        .sort('_id')
+        .paginate(page, itemsPerPage)
+        .then((users, total) => {
+        if(!users){
+            return res.status(404).send({
+                status: "error",
+                message: "No hay usuarios disponibles",
+            });
+        }
+        //Devolver el resultado(follows)
+            return res.status(200).send({
+                status: "success",
+                users,
+                page,
+                itemsPerPage,
+                total,
+                pages: Math.ceil(total/itemsPerPage)
+            });
+
+        })
+    .catch(error =>{
+        return res.status(404).send({
+            status: "error",
+            message: "Error al procesar la peticion"
+        });
+    })
+
+    
+}*/
+const list = async (req, res) => {
+    // Controlar en qué página estamos
+    let page = 1;
+    if (req.params.page) {
+        page = parseInt(req.params.page);
+    }
+
+    // Cantidad de usuarios por página
+    const itemsPerPage = 5;
+
+    try {
+        // Contar el total de usuarios
+        const total = await User.countDocuments();
+
+        // Consulta con Mongoose paginate
+        const users = await User.find()
+            .sort('_id')
+            .skip((page - 1) * itemsPerPage)
+            .limit(itemsPerPage);
+
+        if (!users || users.length === 0) {
+            return res.status(404).send({
+                status: "error",
+                message: "No hay usuarios disponibles",
+            });
+        }
+
+        // Devolver el resultado
+        return res.status(200).send({
+            status: "success",
+            users,
+            page,
+            itemsPerPage,
+            total,
+            pages: Math.ceil(total / itemsPerPage)
+        });
+    } catch (error) {
+        return res.status(500).send({
+            status: "error",
+            message: "Error al procesar la petición"
+        });
+    }
+};
+
 
 
 //Exportar acciones
@@ -160,6 +246,7 @@ module.exports = {
     pruebaUser,
     register,
     login,
-    profile
+    profile,
+    list
 
 };
