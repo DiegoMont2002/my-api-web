@@ -2,6 +2,7 @@
 // Importar dependencias y modulos 
 const bcrypt = require("bcrypt");
 const mongoosePagination = require("mongoose-pagination");
+const fs = require("fs");
 const User = require("../models/user")
 
 //Importar servicios
@@ -127,29 +128,29 @@ const profile = (req, res) => {
 
     //Consulta para sacra los datos del usuario
     User.findById(id)
-    .select({password: 0, role: 0})
-    .exec()
-     .then(userProfile => {
-        if(!userProfile){
-            return res.status(404).send({
-                status: "error",
-                message: "El usuario no existe"
+        .select({ password: 0, role: 0 })
+        .exec()
+        .then(userProfile => {
+            if (!userProfile) {
+                return res.status(404).send({
+                    status: "error",
+                    message: "El usuario no existe"
+                });
+            }
+
+            //Devolver el resultado 
+            return res.status(200).send({
+                status: "success",
+                user: userProfile
             });
-        }
 
-        //Devolver el resultado 
-        return res.status(200).send({
-            status: "success",
-            user: userProfile
+        })
+        .catch(error => {
+            return res.status(500).send({
+                status: "error",
+                message: "Hubo un error al procesar la solicitud"
+            });
         });
-
-    })
-    .catch(error => {
-        return res.status(500).send({
-            status: "error",
-            message: "Hubo un error al procesar la solicitud"
-        });
-    }); 
 
 }
 
@@ -244,7 +245,7 @@ const update = async (req, res) => {
         // Recoger info del usuario a actualizar
         let userIdentity = req.user;
         let userToUpdate = req.body;
-        
+
         delete userToUpdate.iat;
         delete userToUpdate.exp;
         delete userToUpdate.image;
@@ -257,7 +258,7 @@ const update = async (req, res) => {
                 { nick: userToUpdate.nick.toLowerCase() }
             ]
         });
-        
+
         let userIsset = false;
         users.forEach(user => {
             if (user && user._id != userIdentity.id) userIsset = true;
@@ -298,6 +299,61 @@ const update = async (req, res) => {
     }
 };
 
+const upload = async (req, res) => {
+    try {
+        // Recoger el fichero de imagen y comprobar si existe
+        if (!req.file) {
+            return res.status(404).send({
+                status: "error",
+                message: "La petición no incluye la imagen"
+            });
+        }
+
+        // Conseguir el nombre del archivo
+        let image = req.file.originalname;
+
+        // Sacar la extensión del archivo
+        const imageSplit = image.split(".");
+        const extension = imageSplit[1];
+
+        // Comprobar la extensión 
+        if (extension != "png" && extension != "jpg" && extension != "jpeg" && extension != "gif") {
+            // Borrar archivo subido
+            const filePath = req.file.path;
+            const fileDeleted = fs.unlinkSync(filePath);
+
+            // Devolver respuesta negativa
+            return res.status(400).json({
+                status: "error",
+                message: "Extensión del fichero inválida"
+            });
+        }
+
+        // Si la extensión es correcta, guardar la imagen en la base de datos
+        const userUpdate = await User.findByIdAndUpdate(req.user.id, { image: req.file.filename }, { new: true });
+
+        if (!userUpdate) {
+            return res.status(500).send({
+                status: "error",
+                message: "Error en la subida del avatar"
+            });
+        }
+
+        // Devolver respuesta    
+        return res.status(200).send({
+            status: "success",
+            user: userUpdate,
+            file: req.file
+        });
+    } catch (error) {
+        return res.status(500).json({
+            status: "error",
+            message: "Error en la subida del avatar",
+            error: error.message
+        });
+    }
+};
+
 
 //Exportar acciones
 module.exports = {
@@ -306,6 +362,7 @@ module.exports = {
     login,
     profile,
     list,
-    update
+    update,
+    upload
 
 };
