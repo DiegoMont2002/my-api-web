@@ -3,6 +3,7 @@
 const bcrypt = require("bcrypt");
 const mongoosePagination = require("mongoose-pagination");
 const fs = require("fs");
+const path = require("path")
 const User = require("../models/user")
 
 //Importar servicios
@@ -354,6 +355,28 @@ const upload = async (req, res) => {
     }
 };
 
+const avatar = (req, res) => {
+    //Sacar el parametro de la url
+    const file = req.params.file;
+
+    //Montar un path real para la imagen 
+    const filePath = "./uploads/avatars/"+file;
+
+    //Comprobar que existe
+    fs.stat(filePath, (error, exist) => {
+        if(!exist){ 
+            return res.status(404).send({
+                status: "error", 
+                message: "No existe la imagen"
+            });
+        }
+
+        //Devolver un file
+        return res.sendFile(path.resolve(filePath))
+    });
+
+    
+}
 
 //Exportar acciones
 module.exports = {
@@ -363,6 +386,7 @@ module.exports = {
     profile,
     list,
     update,
-    upload
+    upload,
+    avatar
 
 };
