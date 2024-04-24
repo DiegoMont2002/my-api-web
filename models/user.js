@@ -6,6 +6,7 @@ const UserSchema = Schema({
         required: true
     },
     surname: String,
+    bio: String,
     nick: {
         type: String,
         required: true
@@ -18,7 +19,7 @@ const UserSchema = Schema({
         type: String,
         required: true
     },
-    rol: {
+    role: {
         type: String,
         default: "role_user"
     },

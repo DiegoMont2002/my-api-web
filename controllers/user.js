@@ -127,7 +127,7 @@ const profile = (req, res) => {
 
     //Consulta para sacra los datos del usuario
     User.findById(id)
-    .select({password: 0, rol: 0})
+    .select({password: 0, role: 0})
     .exec()
      .then(userProfile => {
         if(!userProfile){
@@ -239,6 +239,64 @@ const list = async (req, res) => {
     }
 };
 
+const update = async (req, res) => {
+    try {
+        // Recoger info del usuario a actualizar
+        let userIdentity = req.user;
+        let userToUpdate = req.body;
+        
+        delete userToUpdate.iat;
+        delete userToUpdate.exp;
+        delete userToUpdate.image;
+        delete userToUpdate.role;
+
+        // Comprobar si el usuario existe
+        const users = await User.find({
+            $or: [
+                { email: userToUpdate.email.toLowerCase() },
+                { nick: userToUpdate.nick.toLowerCase() }
+            ]
+        });
+        
+        let userIsset = false;
+        users.forEach(user => {
+            if (user && user._id != userIdentity.id) userIsset = true;
+        });
+
+        if (userIsset) {
+            return res.status(200).send({
+                status: "success",
+                message: "El usuario ya existe"
+            });
+        }
+
+        // Cifrar la password
+        if (userToUpdate.password) {
+            let pwd = await bcrypt.hash(userToUpdate.password, 10);
+            userToUpdate.password = pwd;
+        }
+
+        // Buscar y actualizar
+        const userUpdate = await User.findByIdAndUpdate(userIdentity.id, userToUpdate, { new: true });
+
+        if (!userUpdate) {
+            return res.status(404).json({ status: "error", message: "Error en la consulta de usuarios" });
+        }
+
+        // Devolver respuesta
+        return res.status(200).send({
+            status: "success",
+            message: "Método de actualización de usuario",
+            user: userUpdate
+        });
+    } catch (error) {
+        return res.status(500).json({
+            status: "error",
+            message: "Error al actualizar el usuario",
+            error: error.message
+        });
+    }
+};
 
 
 //Exportar acciones
@@ -247,6 +305,7 @@ module.exports = {
     register,
     login,
     profile,
-    list
+    list,
+    update
 
 };
