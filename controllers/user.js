@@ -279,7 +279,7 @@ const update = async (req, res) => {
         }
 
         // Buscar y actualizar
-        const userUpdate = await User.findByIdAndUpdate(userIdentity.id, userToUpdate, { new: true });
+        const userUpdate = await User.findByIdAndUpdate({_id: userIdentity.id}, userToUpdate, { new: true });
 
         if (!userUpdate) {
             return res.status(404).json({ status: "error", message: "Error en la consulta de usuarios" });
@@ -331,7 +331,7 @@ const upload = async (req, res) => {
         }
 
         // Si la extensión es correcta, guardar la imagen en la base de datos
-        const userUpdate = await User.findByIdAndUpdate(req.user.id, { image: req.file.filename }, { new: true });
+        const userUpdate = await User.findByIdAndUpdate({_id:req.user.id}, { image: req.file.filename }, { new: true });
 
         if (!userUpdate) {
             return res.status(500).send({
