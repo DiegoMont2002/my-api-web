@@ -8,6 +8,8 @@ const User = require("../models/user")
 
 //Importar servicios
 const jwt = require("../services/jwt");
+const followService = require("../services/followService");
+const { following } = require("./follows");
 
 //Acciones de prueba
 const pruebaUser = (req, res) => {
@@ -131,7 +133,7 @@ const profile = (req, res) => {
     User.findById(id)
         .select({ password: 0, role: 0 })
         .exec()
-        .then(userProfile => {
+        .then(async (userProfile) => {
             if (!userProfile) {
                 return res.status(404).send({
                     status: "error",
@@ -139,10 +141,15 @@ const profile = (req, res) => {
                 });
             }
 
+            //Info de seguimiento
+            const followInfo = await followService.followThisUser(req.user.id, id);
+
             //Devolver el resultado 
             return res.status(200).send({
                 status: "success",
-                user: userProfile
+                user: userProfile,
+                following: followInfo.following,
+                follower: followInfo.follower
             });
 
         })
@@ -224,6 +231,9 @@ const list = async (req, res) => {
             });
         }
 
+        //Sacra un array de los ids de los usuarios que me siguen y los que sigo
+        let followUserIds = await followService.followUserIds(req.user.id);
+
         // Devolver el resultado
         return res.status(200).send({
             status: "success",
@@ -231,7 +241,9 @@ const list = async (req, res) => {
             page,
             itemsPerPage,
             total,
-            pages: Math.ceil(total / itemsPerPage)
+            pages: Math.ceil(total / itemsPerPage),
+            user_following: followUserIds.following,
+            user_follow_me: followUserIds.followers
         });
     } catch (error) {
         return res.status(500).send({
