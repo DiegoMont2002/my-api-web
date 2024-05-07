@@ -5,7 +5,12 @@ const connection = async() => {
 
 
     try{
-        await mongoose.connect(process.env.MONGODB_URI);
+        await mongoose.connect(process.env.MONGODB_URI, {
+
+            useNewUrlParser: true,
+            useUnifiedTopology: true
+        });
+
 
         console.log("Conectado correctamente a la bd: mi_redsocial");
 
